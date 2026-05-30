@@ -1,0 +1,17 @@
+JSGA 15/03/2025: Deje el código de la manera que cuadraba con el articulo sin los cambios de las unidades y con r = 1.5 en vez de 0.15.
+
+JSGA 30/03/2025: Hice un switch de control en donde el caso 1 es el que genera las graficas a diferentes flujos de entrada, los del articulo, y el segundo caso es solo los finales.
+Ya hice la grafica con los puntos finales intentando replicar la figura 3 del articulo, hay 2 figuras, 1 sin marcadores y otra con, no entiendo todavía por que da mal, voy a implementar en el final ya las cosas para simulink pero es un punto importante *Observar porque falla con esos 3* y *hacer los solver del estado estable*.
+
+JSGA 3/04/2025: Hice el código desde 0 a simulink salió bien, esta todo listo con los s functions y con los slx, los nombres son
+S-Funciones: PF_Sfunction_NL (Modelo No Lineal), PF_Sfunction_NL (Modelo Lineal)
+Archivos SLX: PF_implementacion_modeloNL (Modelo No Lineal), PF_implementacion_modeloL (Modelo Lineal)
+
+F_in: No, porque aumenta la producción de sustrato
+S1: Si, porque aumenta la biomasa, aumenta lípidos y nitrógeno
+S2: Análisis
+Q: No, poca biomasa mucho sustrato
+
+S-Function Level 2 dominada, mañana escribir pa que no se me olvide
+
+R = 2 en los dos códigos

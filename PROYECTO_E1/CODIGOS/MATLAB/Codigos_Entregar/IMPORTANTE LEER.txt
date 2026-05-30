@@ -1,0 +1,9 @@
+Dentro de este archivo se encontrara:
+PF_v1_GraficasArticulo: Aquí esta la replica de las graficas del articulo.
+
+PF_v4_Optimizacion: En este código se hace una función para maximizar el valor de los lípidos con fmincon
+
+y la carpeta
+S_function_Level2
+
+Dentro de esta esta PF_CP_Completo_Level2 donde esta todo el archivo del proyecto, asi como también las s-function están marcadas como L de lineal y NL de no lineal de la misma forma que los códigos en simulink.
