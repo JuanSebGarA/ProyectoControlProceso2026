@@ -62,7 +62,7 @@ x_in_ini = x_in;
 x_in_fin = x_in;
 
 S1_in_ini = S1_in;
-S1_in_fin = S1_in*1.1;
+S1_in_fin = S1_in;
 
 
 S2_in_ini = S2_in;
@@ -77,9 +77,9 @@ L_in_fin = L_in;
 I0_in_ini = I0_in;
 I0_in_fin = I0_in;
 
-t_step = 10000;
+t_step = 1000;
 
-t_sim = 20000;
+t_sim = 3000;
 
 out = sim('PF_implementacion_OnOff');
 
@@ -106,7 +106,7 @@ yline(L_ss - H_L/2,'k--','L_{inf}','LineWidth',1)
 
 ylabel('L')
 title('Respuesta del sistema y banda de histéresis')
-legend('L(t)','L_{set}','L_{sup}','L_{inf}')
+legend('L(t)','L_{set}','L_{sup}','L_{inf}', Location='northwest')
 grid on
 
 subplot(2,1,2)
