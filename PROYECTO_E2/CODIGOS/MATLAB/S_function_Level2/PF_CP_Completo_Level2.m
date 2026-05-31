@@ -11,7 +11,7 @@ param_mod = [0.9597 0.1908 0.0167 0.1002 0.579 12.5596 66.5337 100]; % Yxs, Yls,
 % Flujos iniciales
 F_0 = [0.25 0 0 0.025 0.025];
 
-F_in = 2.9922; %L/h
+F_in = 2.9843; %L/h
 
 % Entradas
 x_in = 0;
@@ -19,10 +19,10 @@ S1_in = 60;
 S2_in = 20;
 Q_in = 0;
 L_in = 0;
-I0_in = 200;
+I0_in = 200.0234;
 
 % Otros parámetros no entradas
-R = 2.7312;
+R = 0.1588;
 alpha = 0.0254804;
 B = 0.04;
 V = 270;
@@ -32,7 +32,7 @@ param_in = [I0_in,R,x_in,S1_in,S2_in,Q_in,L_in,alpha,B,V]; %I0, R, x_in, S1_in, 
 u = [F_in,x_in,S1_in,S2_in,Q_in,L_in,I0_in]'; %Igual que la de arriba pero para la S-funchon
 
 
-tspan = linspace(0,20000,120); % Tiempo infinito
+tspan = linspace(0,200000000,120); % Tiempo infinito
 
 [t,y_out] = ode15s(@(t,Y) odeset(t,Y,max,min,param_in,param_mod,F_in),tspan,F_0);
 
@@ -119,7 +119,7 @@ x_in_ini = x_in;
 x_in_fin = x_in;
 
 S1_in_ini = S1_in;
-S1_in_fin = S1_in*1.5;
+S1_in_fin = S1_in;
 
 
 S2_in_ini = S2_in;
@@ -134,9 +134,9 @@ L_in_fin = L_in;
 I0_in_ini = I0_in;
 I0_in_fin = I0_in;
 
-t_step = 10000;
+t_step = 1000;
 
-t_sim = 20000;
+t_sim = 5000;
 
 out = sim('PF_implementacion_modeloNL2');
 
@@ -177,52 +177,52 @@ Dist_S1 = S1_in_t-S1_in;
 
 %%% FIGURA 1
 
-figure(1)
-set(gcf,'Units','centimeters','Position',[0 0 16 25])
-
-% Configuración global
-set(groot, 'defaultAxesFontName', 'Palatino Linotype')
-set(groot, 'defaultAxesFontSize', 11)
-set(groot, 'defaultLineLineWidth', 2.5)
-
-%----------------------
-subplot(5,1,1)
-h1 = plot(time_ODES, x_ODE,'k'); hold on
-h2 = plot(time_Lin, x_Lin, 'r--');
-ylabel('x [g/L]')
-
-%----------------------
-subplot(5,1,2)
-plot(time_ODES, S1_ODE,'k'); hold on
-plot(time_Lin, S1_Lin, 'r--')
-ylabel('S_1 [g/L]')
-
-%----------------------
-subplot(5,1,3)
-plot(time_ODES, S2_ODE,'k'); hold on
-plot(time_Lin, S2_Lin, 'r--')
-ylabel('S_2 [g/L]')
-
-%----------------------
-subplot(5,1,4)
-plot(time_ODES, Q_ODE,'k'); hold on
-plot(time_Lin, Q_Lin, 'r--')
-ylabel('Q [g/L]')
-
-%----------------------
-subplot(5,1,5)
-plot(time_ODES, L_ODE,'k'); hold on
-plot(time_Lin, L_Lin, 'r--')
-ylabel('L [g/L]')
-xlabel('Tiempo [h]')
-
-
-lgd = legend([h1 h2], {'Modelo no lineal','Modelo linealizado'}, ...
-    'Orientation','horizontal');
-
-lgd.FontName = 'Palatino Linotype';
-lgd.Units = 'normalized';
-lgd.Position = [0.3 0.01 0.4 0.04]; % abajo centrada
+% figure(1)
+% set(gcf,'Units','centimeters','Position',[0 0 16 25])
+% 
+% % Configuración global
+% set(groot, 'defaultAxesFontName', 'Palatino Linotype')
+% set(groot, 'defaultAxesFontSize', 11)
+% set(groot, 'defaultLineLineWidth', 2.5)
+% 
+% %----------------------
+% subplot(5,1,1)
+% h1 = plot(time_ODES, x_ODE,'k'); hold on
+% h2 = plot(time_Lin, x_Lin, 'r--');
+% ylabel('x [g/L]')
+% 
+% %----------------------
+% subplot(5,1,2)
+% plot(time_ODES, S1_ODE,'k'); hold on
+% plot(time_Lin, S1_Lin, 'r--')
+% ylabel('S_1 [g/L]')
+% 
+% %----------------------
+% subplot(5,1,3)
+% plot(time_ODES, S2_ODE,'k'); hold on
+% plot(time_Lin, S2_Lin, 'r--')
+% ylabel('S_2 [g/L]')
+% 
+% %----------------------
+% subplot(5,1,4)
+% plot(time_ODES, Q_ODE,'k'); hold on
+% plot(time_Lin, Q_Lin, 'r--')
+% ylabel('Q [g/L]')
+% 
+% %----------------------
+% subplot(5,1,5)
+% plot(time_ODES, L_ODE,'k'); hold on
+% plot(time_Lin, L_Lin, 'r--')
+% ylabel('L [g/L]')
+% xlabel('Tiempo [h]')
+% 
+% 
+% lgd = legend([h1 h2], {'Modelo no lineal','Modelo linealizado'}, ...
+%     'Orientation','horizontal');
+% 
+% lgd.FontName = 'Palatino Linotype';
+% lgd.Units = 'normalized';
+% lgd.Position = [0.3 0.01 0.4 0.04]; % abajo centrada
 
 
 % sgtitle('Perturbación: S_2 x1.5 ','FontName','Palatino Linotype','FontSize',12)
@@ -281,6 +281,12 @@ lgd.Position = [0.3 0.01 0.4 0.04]; % abajo centrada
 % ylabel('Eje Imaginario','FontWeight','bold','FontSize',14)
 % xlabel('Eje Real','FontWeight','bold','FontSize',14)
 % set(gca,'FontSize',12,'FontWeight','bold')
+
+figure(5)
+step(Sys_tf,'b',rSys_min,'r--')
+grid on
+legend('Original','Reducida')
+title('Comparación respuesta al escalón')
 
 function F = odeset(t,Y,max,min,param_in,param_mod,F_in)
 

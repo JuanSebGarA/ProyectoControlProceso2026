@@ -1,41 +1,122 @@
 clc; clear; close all
-%% Parametros
-pmax = [0.0418 0.2109 0.6995 0.1197 0.0762]; % mu,q,l,rho,pi
 
+%% Parametros modelo
+% Parámetros maximos
+max = [0.0418 0.2109 0.6995 0.1197 0.0762]; % mu,q,l,rho,pi
+% Parámetros minimos
 min = [0.0196 0.0006]; % q,l
-
-param_in = [200,0.1588,0,60,20,0,0,0.0254804,0.04,270]; %I0, R, x_in, S1_in, S2_in, Q_in, L_in, alpha, V
-
+% Parámetros modelo
 param_mod = [0.9597 0.1908 0.0167 0.1002 0.579 12.5596 66.5337 100]; % Yxs, Yls, ms, mu_max, qmin, qmax, lmin, lmax, rho_max, pi_max, KS1, KN, KL, KI, KI2
 
+% Flujos iniciales
 F_0 = [0.25 0 0 0.025 0.025];
 
-F_in = 2.9843;
+F_in = 2.9843; %L/h
 
-tspan = linspace(0,200000,150);
+% Entradas
+x_in = 0;
+S1_in = 60;
+S2_in = 20;
+Q_in = 0;
+L_in = 0;
+I0_in = 200;
+
+% Otros parámetros no entradas
+R = 0.1588;
+alpha = 0.0254804;
+B = 0.04;
+V = 270;
+
+param_in = [I0_in,R,x_in,S1_in,S2_in,Q_in,L_in,alpha,B,V]; %I0, R, x_in, S1_in, S2_in, Q_in, L_in, alpha, V
+
+u = [F_in,x_in,S1_in,S2_in,Q_in,L_in,I0_in]'; %Igual que la de arriba pero para la S-funchon
 
 
-[t,y_out] = ode15s(@(t,Y) odeset(t,Y,pmax,min,param_in,param_mod,F_in),tspan,F_0);
+tspan = linspace(0,20000,120); % Tiempo infinito
+
+[t,y_out] = ode15s(@(t,Y) odeset(t,Y,max,min,param_in,param_mod,F_in),tspan,F_0);
 
 x_out = y_out(:,1)';
+S1_out = y_out(:,2)';
+S2_out = y_out(:,3)';
 Q_out = y_out(:,4)';
 L_out = y_out(:,5)';
 X_out = x_out + Q_out + L_out;
 
-L_max = L_out(end)
+ODE_ss = [y_out(end,1),y_out(end,2),y_out(end,3),y_out(end,4),y_out(end,5)];
+
+SS_desv = (F_0-ODE_ss)';
+
+L_desv = (L_out-L_out(1))';
+
+L_ss = ODE_ss(5);
+
+H_L = 0.5;
+
+%% Entradas simulink
+
+F_in_ini = F_in;
+F_in_fin = F_in;
+
+x_in_ini = x_in;
+x_in_fin = x_in;
+
+S1_in_ini = S1_in;
+S1_in_fin = S1_in*1.1;
 
 
-plot(t,X_out,'k','LineWidth',2)
+S2_in_ini = S2_in;
+S2_in_fin = S2_in;
+
+Q_in_ini = Q_in;
+Q_in_fin = Q_in;
+
+L_in_ini = L_in;
+L_in_fin = L_in;
+
+I0_in_ini = I0_in;
+I0_in_fin = I0_in;
+
+t_step = 10000;
+
+t_sim = 20000;
+
+out = sim('PF_implementacion_OnOff');
+
+I0_in_t = out.Inputs.Data(:,7);
+
+L_ODE = out.Outputs_Reactor.Data(:,5);
+
+L_error = out.L_set.Data(:,1);
+
+time_inputs = out.Inputs.Time;
+
+%%
+
+figure(1)
+
+subplot(2,1,1)
+plot(time_inputs,L_ODE,'LineWidth',1.5)
 hold on
-plot(t,L_out,'g','LineWidth',2)
-plot(t,Q_out,'r--','LineWidth',2)
-plot(t,x_out,'b','LineWidth',2)
 
-legend('X_{total}','L','Q','x','Location','best')
-xlabel("Tiempo [h]")
-ylabel("Concentración [g/L]")
-set(gca,'FontSize',12)
+yline(L_ss,'r--','L_{set}','LineWidth',1.5)
 
+yline(L_ss + H_L/2,'k--','L_{sup}','LineWidth',1)
+yline(L_ss - H_L/2,'k--','L_{inf}','LineWidth',1)
+
+ylabel('L')
+title('Respuesta del sistema y banda de histéresis')
+legend('L(t)','L_{set}','L_{sup}','L_{inf}')
+grid on
+
+subplot(2,1,2)
+stairs(time_inputs,I0_in_t,'LineWidth',1.5)
+ylabel('I_0')
+xlabel('Tiempo')
+title('Acción del controlador On-Off')
+grid on
+
+%%
 
 function F = odeset(t,Y,max,min,param_in,param_mod,F_in)
 
@@ -82,3 +163,4 @@ dL_dt = pi * x - mu * L + (F_in/V) * (L_in - L);
 
 F = [dx_dt, dS1_dt, dS2_dt, dQ_dt, dL_dt]';
 end
+
