@@ -96,7 +96,7 @@ block.RegBlockMethod('Terminate', @Terminate); % Required
 %%
 function InitializeConditions(block)
 
-block.ContStates.Data = [5.861486926451640,7.915574937043268,15.399974192230890,2.296530980714568,3.536036524961809]';
+block.ContStates.Data = [7.16775220460516,4.97029248612262,14.7487949844903,2.62560250774645,3.50415241870546]';
 
 %end InitializeConditions
 
@@ -137,7 +137,7 @@ S2 = x(3);      Q = x(4);
 L = x(5);
 
 % Parametros Entrada
-R = 1.5;
+R = 0.1588;
 alpha = 0.0254804;
 B = 0.04;
 V = 270;

@@ -32,7 +32,7 @@ param_in = [I0_in,R,x_in,S1_in,S2_in,Q_in,L_in,alpha,B,V]; %I0, R, x_in, S1_in, 
 u = [F_in,x_in,S1_in,S2_in,Q_in,L_in,I0_in]'; %Igual que la de arriba pero para la S-funchon
 
 
-tspan = linspace(0,200000000,120); % Tiempo infinito
+tspan = linspace(0,2e8,120); % Tiempo infinito
 
 [t,y_out] = ode15s(@(t,Y) odeset(t,Y,max,min,param_in,param_mod,F_in),tspan,F_0);
 
@@ -110,6 +110,27 @@ RGA1 = K1p.*(pinv(K1p))';
 
 [U, S, V1] = svd(K1);
 CN = S(1,1)/S(5,5);
+
+%% Analisis de las ganancias
+
+G_L_Fin = Sys_tf(5,1);
+G_L_xin = Sys_tf(5,2);
+G_L_S1  = Sys_tf(5,3);
+G_L_S2  = Sys_tf(5,4);
+G_L_Q   = Sys_tf(5,5);
+G_L_Lin = Sys_tf(5,6);
+G_L_I0  = Sys_tf(5,7);
+
+dcgain(G_L_Fin)
+dcgain(G_L_xin)
+dcgain(G_L_S1)
+dcgain(G_L_S2)
+dcgain(G_L_Q)
+dcgain(G_L_Lin)
+dcgain(G_L_I0)
+
+
+
 %% Entradas simulink
 
 F_in_ini = F_in;
@@ -119,7 +140,7 @@ x_in_ini = x_in;
 x_in_fin = x_in;
 
 S1_in_ini = S1_in;
-S1_in_fin = S1_in;
+S1_in_fin = S1_in*1.5;
 
 
 S2_in_ini = S2_in;
@@ -136,7 +157,7 @@ I0_in_fin = I0_in;
 
 t_step = 1000;
 
-t_sim = 5000;
+t_sim = 10000;
 
 out = sim('PF_implementacion_modeloNL2');
 
@@ -172,10 +193,172 @@ time_Lin = out.lineal_model.Time;
 
 Dist_S1 = S1_in_t-S1_in;
 
+%% Metricas
+
+vars = {'x','S1','S2','Q','L'};
+ODE  = {x_ODE,S1_ODE,S2_ODE,Q_ODE,L_ODE};
+LIN  = {x_Lin,S1_Lin,S2_Lin,Q_Lin,L_Lin};
+
+
+for i = 1:length(vars)
+
+    y = ODE{i};
+    yhat = LIN{i};
+
+    mae  = mean(abs(y - yhat));
+    rmse = sqrt(mean((y - yhat).^2));
+    r2   = 1 - sum((y - yhat).^2)/sum((y - mean(y)).^2);
+
+    fprintf('%s:\n',vars{i});
+    fprintf('   MAE  = %.5f\n',mae);
+    fprintf('   RMSE = %.5f\n',rmse);
+    fprintf('   R2   = %.5f\n\n',r2);
+
+end
 
 %% Figuras
 
 %%% FIGURA 1
+
+
+figure(1)
+clf
+
+set(gcf,'Units','centimeters','Position',[0 0 22 16])
+
+% Configuración global
+set(groot,'defaultAxesFontName','Palatino Linotype')
+set(groot,'defaultAxesFontSize',11)
+set(groot,'defaultLineLineWidth',2.5)
+
+tiledlayout(2,3,...
+    'TileSpacing','compact',...
+    'Padding','compact');
+
+%==========================================================
+% Biomasa
+%==========================================================
+nexttile
+h1 = plot(time_ODES,x_ODE,'k'); hold on
+h2 = plot(time_Lin,x_Lin,'r--');
+ylabel('x [g/L]')
+xlabel('Tiempo [h]')
+grid on
+box on
+
+%==========================================================
+% Sustrato 1
+%==========================================================
+nexttile
+plot(time_ODES,S1_ODE,'k'); hold on
+plot(time_Lin,S1_Lin,'r--')
+ylabel('S_1 [g/L]')
+xlabel('Tiempo [h]')
+grid on
+box on
+
+%==========================================================
+% Sustrato 2
+%==========================================================
+nexttile
+plot(time_ODES,S2_ODE,'k'); hold on
+plot(time_Lin,S2_Lin,'r--')
+ylabel('S_2 [g/L]')
+xlabel('Tiempo [h]')
+grid on
+box on
+
+%==========================================================
+% Producto Q
+%==========================================================
+nexttile
+plot(time_ODES,Q_ODE,'k'); hold on
+plot(time_Lin,Q_Lin,'r--')
+ylabel('Q [g/L]')
+xlabel('Tiempo [h]')
+grid on
+box on
+
+%==========================================================
+% Producto L
+%==========================================================
+nexttile
+plot(time_ODES,L_ODE,'k'); hold on
+plot(time_Lin,L_Lin,'r--')
+ylabel('L [g/L]')
+xlabel('Tiempo [h]')
+grid on
+box on
+
+%==========================================================
+% Sexto panel: Leyenda
+%==========================================================
+axLeg = nexttile;
+axis(axLeg,'off')
+
+lgd = legend(axLeg,[h1 h2], ...
+    {'Modelo no lineal','Modelo linealizado'}, ...
+    'Orientation','vertical');
+
+lgd.Box = 'off';
+lgd.FontName = 'Palatino Linotype';
+lgd.FontSize = 12;
+
+% Ajuste fino de posición
+lgd.Units = 'normalized';
+lgd.Position = [0.45 0.22 0.80 0.10];
+% 
+ exportgraphics(gcf,'Figura_Modelo_Pert_C.png','Resolution',600)
+
+% figure(1)
+% set(gcf,'Units','centimeters','Position',[0 0 45 9]) % más ancho que alto
+% 
+% % Configuración global
+% set(groot,'defaultAxesFontName','Palatino Linotype')
+% set(groot,'defaultAxesFontSize',11)
+% set(groot,'defaultLineLineWidth',2.5)
+% 
+% %----------------------
+% subplot(1,5,1)
+% h1 = plot(time_ODES,x_ODE,'k'); hold on
+% h2 = plot(time_Lin,x_Lin,'r--');
+% ylabel('x [g/L]')
+% xlabel('Tiempo [h]')
+% 
+% %----------------------
+% subplot(1,5,2)
+% plot(time_ODES,S1_ODE,'k'); hold on
+% plot(time_Lin,S1_Lin,'r--')
+% ylabel('S_1 [g/L]')
+% xlabel('Tiempo [h]')
+% 
+% %----------------------
+% subplot(1,5,3)
+% plot(time_ODES,S2_ODE,'k'); hold on
+% plot(time_Lin,S2_Lin,'r--')
+% ylabel('S_2 [g/L]')
+% xlabel('Tiempo [h]')
+% 
+% %----------------------
+% subplot(1,5,4)
+% plot(time_ODES,Q_ODE,'k'); hold on
+% plot(time_Lin,Q_Lin,'r--')
+% ylabel('Q [g/L]')
+% xlabel('Tiempo [h]')
+% 
+% %----------------------
+% subplot(1,5,5)
+% plot(time_ODES,L_ODE,'k'); hold on
+% plot(time_Lin,L_Lin,'r--')
+% ylabel('L [g/L]')
+% xlabel('Tiempo [h]')
+% 
+% lgd = legend([h1 h2],{'Modelo no lineal','Modelo linealizado'},...
+%     'Orientation','horizontal');
+% 
+% lgd.FontName = 'Palatino Linotype';
+% lgd.Units = 'normalized';
+% lgd.Position = [0.35 0.1 0.3 0.05]; % arriba centrada
 
 % figure(1)
 % set(gcf,'Units','centimeters','Position',[0 0 16 25])
@@ -282,11 +465,33 @@ Dist_S1 = S1_in_t-S1_in;
 % xlabel('Eje Real','FontWeight','bold','FontSize',14)
 % set(gca,'FontSize',12,'FontWeight','bold')
 
-figure(5)
-step(Sys_tf,'b',rSys_min,'r--')
-grid on
-legend('Original','Reducida')
-title('Comparación respuesta al escalón')
+% figure(5)
+% set(gcf,'Units','centimeters','Position',[2 2 25 18]) 
+% 
+% step(Sys_tf,'b',rSys_min,'r--')
+% grid on
+% legend('Original','Reducida')
+% title('Comparación respuesta al escalón')
+% 
+% set(findall(gcf,'Type','line'),'LineWidth',2)
+% 
+% set(gcf,'Color','w')
+% 
+% exportgraphics(gcf,'Figura5_Step_Comparacion.png','Resolution',600)
+
+
+% figure(6)
+% step(G_L_S1)
+% hold on
+% step(G_L_S2)
+% step(G_L_I0)
+% 
+% set(findall(gcf,'Type','line'),'LineWidth',2)
+% 
+% legend('S1_{in}','S2_{in}','I_0')
+% grid on
+% title('Respuesta de L ante cambios en las entradas')
+
 
 function F = odeset(t,Y,max,min,param_in,param_mod,F_in)
 

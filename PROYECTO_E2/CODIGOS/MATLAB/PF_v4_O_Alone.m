@@ -35,6 +35,7 @@ legend('X_{total}','L','Q','x','Location','best')
 xlabel("Tiempo [h]")
 ylabel("Concentración [g/L]")
 set(gca,'FontSize',12)
+exportgraphics(gcf,'SS.png','Resolution',300)
 
 
 function F = odeset(t,Y,max,min,param_in,param_mod,F_in)
